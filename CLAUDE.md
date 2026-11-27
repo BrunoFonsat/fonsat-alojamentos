@@ -77,7 +77,7 @@ Na aplicação diz-se sempre **«alojamento»** (masculino), nunca «casa»: «N
 - **Data de saída = dia em que sai** (como o check-out), a partir de 27/11/2026. Nesse dia a pessoa **já não conta** no alojamento e fica logo disponível para outro. Alojado no dia d ⇔ entrada ≤ d e (sem saída ou saída > d).
   - Antes, a data contava como «último dia lá»: dar saída hoje deixava a pessoa no alojamento até amanhã e bloqueada para outro. Corrigido no servidor, na página e nos scripts, com teste.
   - As saídas que existiam (2, ambas de 27/11) já tinham o significado «saiu hoje» e não foram alteradas.
-- **Transferência:** sai do alojamento antigo e entra no novo **no mesmo dia** (a data indicada), com o mesmo motivo, num só passo. Tem de ser depois do dia de entrada.
+- **Transferência:** sai do alojamento antigo e entra no novo **no mesmo dia** (a data indicada), com o mesmo motivo, num só passo. Pode ser no próprio dia da entrada (o registo antigo fica com entrada = saída e não conta em nenhum dia); não pode ser antes.
   - Destinos possíveis: só casas **ativas**, nunca a própria casa de origem, e só da delegação do utilizador (o gestor vê todas).
   - A ocupação e as camas livres são calculadas **à data da transferência**: conta quem lá está nesse dia.
   - Casa **cheia ou acima da lotação:** é permitido, mas mostra a ocupação resultante (ex.: «7 pessoas para 6 camas») e pede **confirmação explícita**. O servidor volta a calcular e recusa sem `confirm_over: true`; fica no histórico «acima da lotação, confirmado».
@@ -94,6 +94,7 @@ Na aplicação diz-se sempre **«alojamento»** (masculino), nunca «casa»: «N
 - **Responsável do alojamento e lista semanal** (feito a 26/11/2026):
   - Cada alojamento tem um **responsável**, que é um dos ocupantes atuais. Nomeia-se com ★ na lista de ocupantes (é um movimento, não pede código). Aparece **em destaque e primeiro** na lista.
   - Quem sai ou é transferido deixa de ser responsável.
+  - **Funcionários → «★ Responsáveis»:** um alojamento com ocupantes por linha (os sem responsável primeiro), com telefone e estado da lista semanal. «Nomear» / «Substituir» escolhem só entre quem está hoje no mesmo alojamento; «Retirar» deixa-o sem responsável. Gestor e coordenador (na sua delegação); administrativo só vê.
   - Todos os ocupantes mostram o **telefone**. Sem telefone, aparece a etiqueta «Sem telefone» e alertas no alojamento: «Sem responsável», «Responsável sem telefone», «N ocupantes sem telefone».
   - **Idioma** de cada funcionário: Espanhol, Português ou vazio (= espanhol), escolhido à mão na ficha.
   - **«Pedir lista (WhatsApp)»**:
@@ -387,7 +388,7 @@ Um ficheiro com as folhas **«Alojamentos»**, **«Funcionários»** e **«Instr
 
   42 testes a passar.
 - **Dados reais** (Astúrias, Catalunha, Porto, hotéis, quartos): o estado das importações e o que falta confirmar estão em `data/import/ESTADO-DADOS.md`. Esse ficheiro **fica fora do git**, porque tem nomes de pessoas (RGPD). Lê-lo antes de mexer em dados reais.
-- **Por fazer:** repositório no GitHub e publicação (Vercel + Turso).
+- **Publicado** a 27/11/2026: GitHub `BrunoFonsat/fonsat-alojamentos` (`main` → deploy automático no Vercel), https://fonsat-alojamentos.vercel.app, função em `fra1`, BD no Turso (UE). `vercel.json` encaminha `/api/*` e `/lista/<token>`. Os dados que valem são os do Turso; `data/alojamentos.sqlite` deixou de ser atualizado. O `.env` local (fora do git) tem `ALOJ_DB_URL`/`ALOJ_DB_TOKEN` para scripts.
 - O Leaflet 1.9.4 está copiado em `public/vendor/leaflet/` (a CSP só permite scripts do próprio site). Para o atualizar, voltar a copiá-lo de `node_modules/leaflet/dist/`.
 - O repositório **não** pode ter nomes, telefones ou outros dados de pessoas reais: os testes usam nomes fictícios e os dados reais ficam em `data/` (no `.gitignore`).
 

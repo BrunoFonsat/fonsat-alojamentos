@@ -1260,6 +1260,45 @@ function viewCorrections() {
 }
 
 // ---------- funcionários ----------
+/** Responsáveis: um alojamento (com ocupantes) por linha. Nomear, substituir (só por quem lá está) ou retirar. */
+function responsiblesTable() {
+  const hs = D.houses.filter((x) => x.active && occupantsNow(x.id).length
+    && (!mem.wdel || x.delegation === mem.wdel))
+    .sort((a, b) => (!!a.responsible_id - !!b.responsible_id) || a.delegation.localeCompare(b.delegation) || a.name.localeCompare(b.name, 'pt'));
+  if (!hs.length) return h('p', { class: 'muted' }, 'Nenhum alojamento com ocupantes nesta delegação.');
+  const rows = hs.map((x) => {
+    const r = x.responsible_id ? worker(x.responsible_id) : null, cs = checkinState(x), occ = occupantsNow(x.id);
+    return h('tr', { 'data-q': `${x.name} ${x.code ?? ''} ${r?.name ?? ''} ${r?.phone ?? ''}`.toLowerCase() },
+      h('td', houseLink(x), x.code ? h('div', { class: 'muted small' }, x.code) : null),
+      td(delLabel(x.delegation)),
+      h('td', r ? h('div', h('b', `★ ${r.name}`)) : h('span', { class: 'chip bad' }, 'Sem responsável'),
+        h('div', { class: 'muted small' }, r ? (telLink(r.phone) ?? h('span', { class: 'chip warn' }, 'Sem telefone')) : null, r ? ' · ' : null, `${occ.length} ocupante${occ.length === 1 ? '' : 's'}`)),
+      h('td', { class: 'small' }, r ? cs.text : '—'),
+      h('td', W(h('span', { class: 'inl' },
+        h('button', { class: `btn sm${r ? '' : ' pri'}`, onclick: () => openPickResponsible(x) }, r ? 'Substituir' : 'Nomear'),
+        r ? h('button', { class: 'btn sm ghost', onclick: () => { if (confirm(`Retirar «${r.name}» de responsável de «${x.name}»? O alojamento fica sem responsável (sem lista semanal até nomear outro).`)) act(() => api('PUT', `/api/houses/${x.id}/responsible`, { worker_id: null }), `«${x.name}» ficou sem responsável.`); } }, 'Retirar') : null))));
+  });
+  return h('div', table(['Alojamento', 'Delegação', 'Responsável', 'Lista semanal', ''], rows));
+}
+/** Escolher o responsável entre quem está hoje no MESMO alojamento. */
+function openPickResponsible(x) {
+  const cur = x.responsible_id ? worker(x.responsible_id) : null;
+  const occ = occupantsNow(x.id).map((s) => worker(s.worker_id)).filter((w) => w && w.id !== x.responsible_id).sort((a, b) => a.name.localeCompare(b.name));
+  const box = msgBox();
+  const d = dialog(cur ? 'Substituir responsável' : 'Nomear responsável', h('div'));
+  if (!occ.length) { d.querySelector('.db').replaceChildren(alert('warn', `Não há outros ocupantes em «${x.name}» para escolher.`)); return; }
+  const f = h('form', { class: 'form', onsubmit: async (e) => {
+    e.preventDefault(); const wid = Number(new FormData(f).get('worker_id')); const w = worker(wid);
+    if (await act(() => api('PUT', `/api/houses/${x.id}/responsible`, { worker_id: wid }), `${w.name} é agora o responsável de «${x.name}».`, box)) d.close();
+  } },
+  h('p', { class: 'help full' }, cur ? `Atual: ${cur.name}. Só pode escolher quem está hoje em «${x.name}».` : `Só pode escolher quem está hoje em «${x.name}». É quem confirma a lista toda a semana.`),
+  h('div', { class: 'full tpick' }, occ.map((w, i) => h('label', { class: 'topt' },
+    h('input', { type: 'radio', name: 'worker_id', value: w.id, required: true, checked: i === 0 && occ.length === 1 }),
+    h('span', { class: 'tn' }, h('b', w.name), w.profession ? h('span', { class: 'muted small' }, w.profession) : null),
+    h('span', { class: `tag${w.phone ? '' : ' bad-t'}` }, w.phone || 'sem telefone')))),
+  box, h('div', { class: 'acts' }, h('span'), h('button', { class: 'btn pri', type: 'submit' }, cur ? 'Substituir' : 'Nomear')));
+  d.querySelector('.db').replaceChildren(f);
+}
 function viewWorkers() {
   // filtros: delegação ('' todas · 'pendente' · chave), profissão, só sem alojamento
   const profs = [...new Set(D.workers.map((w) => w.profession).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt'));
@@ -1277,12 +1316,13 @@ function viewWorkers() {
       td(w.profession || '—'), h('td', telLink(w.phone) ?? '—'),
       h('td', w.delegation == null ? h('span', { class: 'chip warn' }, 'Pendente') : delLabel(w.delegation)),
       h('td', x ? houseLink(x) : w.own_housing ? h('span', { class: 'chip s-ok' }, 'Alojamento próprio') : w.delegation == null ? h('span', { class: 'chip warn' }, 'Por rever') : h('span', { class: 'chip' }, 'sem alojamento')), td(st ? dateLabel(st.start_date) : '—')); });
-  const content = h('div', list.length ? table(['Nome', 'Profissão', 'Telefone', 'Delegação', 'Alojamento atual', 'Desde'], tbody) : h('p', { class: 'muted' }, 'Nenhum funcionário com estes filtros.'));
+  const content = mem.wfree === 'resp' ? responsiblesTable()
+    : h('div', list.length ? table(['Nome', 'Profissão', 'Telefone', 'Delegação', 'Alojamento atual', 'Desde'], tbody) : h('p', { class: 'muted' }, 'Nenhum funcionário com estes filtros.'));
   const count = h('span', { class: 'muted small', 'aria-live': 'polite' });
   const applySearch = () => {
     const q = (mem.wq ?? '').trim().toLowerCase(); let n = 0;
     content.querySelectorAll('[data-q]').forEach((el) => { el.hidden = !!q && !el.dataset.q.includes(q); if (!el.hidden) n++; });
-    count.textContent = `${n} de ${D.workers.length}`;
+    count.textContent = mem.wfree === 'resp' ? `${n} alojamento${n === 1 ? '' : 's'}` : `${n} de ${D.workers.length}`;
   };
   mounts.push(applySearch);
   const sel = (key, opts, label) => h('select', { 'aria-label': label, onchange: (e) => { mem[key] = e.target.value; remember(); render(); } }, opts.map(([v, l]) => h('option', { value: v, selected: (mem[key] ?? '') === v }, l)));
@@ -1293,9 +1333,9 @@ function viewWorkers() {
     h('div', { class: 'toolbar' },
       h('div', { class: 'grow' }, icon('search'), h('input', { type: 'search', value: mem.wq ?? '', placeholder: 'Procurar nome, profissão ou telefone', 'aria-label': 'Procurar', oninput: (e) => { mem.wq = e.target.value; remember(); applySearch(); } })),
       sel('wdel', [['', 'Todas as delegações'], ...D.delegations.filter(([k]) => dels.includes(k)).map(([k, l]) => [k, l]), ...(dels.includes('pendente') ? [['pendente', 'Pendentes (sem delegação)']] : [])], 'Delegação'),
-      profs.length ? sel('wprof', [['', 'Todas as profissões'], ...profs.map((p) => [p, p])], 'Profissão') : null,
-      seg([['', 'Todos'], ['sem', 'Sem alojamento'], ['proprio', 'Alojamento próprio'], ['rever', `Por rever (${toReview().length})`]], mem.wfree || '', (v) => { mem.wfree = v; remember(); render(); }), count),
-    mem.wfree === 'rever' ? null : reviewAlert(),
+      profs.length && mem.wfree !== 'resp' ? sel('wprof', [['', 'Todas as profissões'], ...profs.map((p) => [p, p])], 'Profissão') : null,
+      seg([['', 'Todos'], ['sem', 'Sem alojamento'], ['proprio', 'Alojamento próprio'], ['rever', `Por rever (${toReview().length})`], ['resp', '★ Responsáveis']], mem.wfree || '', (v) => { mem.wfree = v; remember(); render(); }), count),
+    ['rever', 'resp'].includes(mem.wfree) ? null : reviewAlert(),
     content);
 }
 
