@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light">
+<title>Fonsat · Lista del alojamiento</title>
+<link rel="icon" href="/logo.jpg">
+<style>
+  :root{--bg:#f3f5f7;--panel:#fff;--ink:#16202a;--mut:#5d6b78;--line:#e3e8ed;--acc:#0f8577;--acc-soft:#e3f4f1;--bad:#c23b3b;--ok:#1f9d55}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  main{max-width:560px;margin:0 auto;padding:20px 16px 48px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:18px;color:var(--mut);font-size:14px}.brand img{width:28px;height:28px;border-radius:6px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;animation:up .3s ease both}
+  h1{font-size:21px;margin:0 0 6px}p{margin:0 0 10px;color:var(--mut)}
+  .p{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+  .p:first-of-type{border-top:0}.p b{font-weight:600}
+  .tg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
+  .tg button{border:0;background:none;padding:9px 12px;font:inherit;font-size:14px;color:var(--mut);cursor:pointer;min-height:40px}
+  .tg button[aria-pressed=true].yes{background:var(--acc-soft);color:var(--acc);font-weight:600}
+  .tg button[aria-pressed=true].no{background:#fdeaea;color:var(--bad);font-weight:600}
+  input,textarea{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);margin-bottom:8px}
+  .btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font:inherit;font-weight:600;background:var(--acc);color:#fff;cursor:pointer;min-height:48px}
+  .btn.ghost{background:none;color:var(--acc);border:1px dashed var(--line);font-weight:500}
+  .msg{padding:12px;border-radius:10px;margin-bottom:12px}.msg.ok{background:var(--acc-soft);color:var(--acc)}.msg.bad{background:#fdeaea;color:var(--bad)}
+  .done{text-align:center;padding:40px 22px}.done h1{font-size:26px;margin:14px 0 6px}.done p{font-size:16px}
+  .check{width:64px;height:64px;margin:0 auto;border-radius:50%;background:var(--acc-soft);color:var(--acc);font-size:34px;font-weight:700;display:grid;place-items:center;animation:pop .35s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+  @keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.panel,.check{animation:none}}
+</style>
+</head>
+<body>
+<main id="app"><p>…</p></main>
+<script src="/lista.js"></script>
+</body>
+</html>

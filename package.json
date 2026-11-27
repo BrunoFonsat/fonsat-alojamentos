@@ -1,0 +1,26 @@
+{
+  "name": "fonsat-alojamentos",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server/index.js",
+    "test": "node --test \"test/*.test.js\"",
+    "seed:demo": "node scripts/seed-demo.js",
+    "user:create": "node scripts/create-user.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.18.0",
+    "exceljs": "^4.4.0"
+  },
+  "devDependencies": {
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}
