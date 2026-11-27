@@ -629,7 +629,8 @@ export function createApp(db, { secureCookies = process.env.ALOJ_COOKIE_SECURE =
         if (to.id === h.id) throw new HttpError(422, 'Escolha um alojamento diferente.');
         if (!to.active) throw new HttpError(422, `«${to.name}» está inativo: não pode receber pessoas.`);
         const end = date; // sai de um e entra no outro no mesmo dia
-        if (date <= s.start_date) throw new HttpError(422, 'A transferência tem de ser depois do dia de entrada. Para corrigir o alojamento, edite o registo.');
+        // no próprio dia da entrada é permitido: o registo antigo fica com entrada = saída (não conta em nenhum dia)
+        if (date < s.start_date) throw new HttpError(422, 'A transferência não pode ser antes do dia de entrada.');
         // lotação à data da transferência: acima da lotação é permitido, mas só com confirmação explícita
         const usedAt = (await t.get('SELECT COUNT(*) n FROM stays WHERE house_id=? AND start_date<=? AND (end_date IS NULL OR end_date>?)', [to.id, date, date])).n;
         const overNote = to.capacity != null && usedAt + 1 > to.capacity ? ` (acima da lotação: ${usedAt + 1} pessoas para ${to.capacity} camas, confirmado)` : '';

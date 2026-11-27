@@ -99,12 +99,19 @@ test('entradas, saídas com motivo, transferência, sobreposição, acertos e hi
     assert.equal(dup.status, 422); assert.match(dup.json.error, /Casa 1/);
     // transferência: sai na véspera e entra na nova
     const L = (o) => g('POST', '/api/stays/leave', o);
-    assert.equal((await L({ stay_id: ana.id, date: '2026-01-10', reason: 'X', to_house_id: h2 })).status, 422); // no próprio dia da entrada
+    assert.equal((await L({ stay_id: ana.id, date: '2026-01-09', reason: 'X', to_house_id: h2 })).status, 422); // antes da entrada
     assert.equal((await L({ stay_id: ana.id, date: '2026-03-01', reason: 'Transferência', to_house_id: h2 })).json.transferred, true);
     let d = (await g('GET', '/api/data')).json;
     const old = d.stays.find((x) => x.id === ana.id), nw = d.stays.find((x) => x.worker_id === ana.worker_id && x.house_id === h2);
     assert.equal(old.end_date, '2026-03-01'); assert.equal(old.exit_reason, 'Transferência'); assert.equal(nw.start_date, '2026-03-01'); // sai e entra no mesmo dia
     assert.equal((await L({ stay_id: ana.id, date: '2026-04-01', reason: 'X' })).status, 422); // já saiu
+    // transferência no próprio dia da entrada: sai logo do antigo (não conta lá nesse dia) e fica só no novo
+    const h3 = (await g('PUT', '/api/houses', { name: 'Casa 3', delegation: 'asturias', capacity: 3 })).json.id;
+    const carla = (await E({ house_id: h1, worker_name: 'Carla', date: '2026-06-01', reason: 'Início de obra' })).json;
+    assert.equal((await L({ stay_id: carla.id, date: '2026-06-01', reason: 'Transferência', to_house_id: h3 })).json.transferred, true);
+    d = (await g('GET', '/api/data')).json;
+    const cs = d.stays.filter((x) => x.worker_id === carla.worker_id).sort((a, b) => a.id - b.id);
+    assert.deepEqual(cs.map((x) => [x.house_id, x.start_date, x.end_date]), [[h1, '2026-06-01', '2026-06-01'], [h3, '2026-06-01', null]]);
     assert.equal((await L({ stay_id: bruno.id, date: '2026-01-01', reason: 'Fim' })).status, 422); // antes da entrada
     assert.equal((await L({ stay_id: bruno.id, date: '2026-05-31', reason: 'Fim de obra' })).json.transferred, false);
     // correção que criaria sobreposição é recusada

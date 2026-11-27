@@ -1,5 +1,5 @@
 // Fonsat · Alojamentos — painel por delegação, casas (cards/lista), mapa, ocupantes (entradas/saídas com motivo), custos e histórico.
-import { transferOptions, dayAfter } from './transfer.js';
+import { transferOptions } from './transfer.js';
 import { h, eur, num, pct, monthLabel, dateLabel, alert, field, table, td, api, session } from '/ui.js';
 
 let D = null;          // dados do servidor (/api/data), já limitados à delegação do utilizador
@@ -488,7 +488,7 @@ function leaveForm(st, x, d) {
   return f;
 }
 function transferForm(st, x, d) {
-  const minDate = dayAfter(st.start_date);
+  const minDate = st.start_date; // pode ser no próprio dia da entrada
   const box = msgBox();
   const state = { date: today() < minDate ? minDate : today(), region: null, to: null, confirmed: false };
   const regionSel = h('select', { 'aria-label': 'Região ou zona', required: true });
