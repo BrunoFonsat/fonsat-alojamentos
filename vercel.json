@@ -1,5 +1,8 @@
 {
   "framework": null,
+  "regions": [
+    "fra1"
+  ],
   "outputDirectory": "public",
   "rewrites": [
     {

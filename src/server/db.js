@@ -20,6 +20,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  */
 export async function openDb(target = process.env.ALOJ_DB_URL || process.env.ALOJ_DB || 'data/alojamentos.sqlite') {
   const remote = /^(libsql|https?|wss?):/.test(target);
+  if (process.env.VERCEL && !remote) throw Object.assign(new Error('ALOJ_DB_URL em falta no Vercel'), { hint: 'BD não configurada: falta ALOJ_DB_URL no ambiente Production' });
+  if (remote && !process.env.ALOJ_DB_TOKEN) throw Object.assign(new Error('ALOJ_DB_TOKEN em falta'), { hint: 'BD não configurada: falta ALOJ_DB_TOKEN' });
   const url = remote || target.startsWith('file:') ? target : `file:${target}`;
   if (!remote && !target.startsWith('file:')) fs.mkdirSync(path.dirname(target), { recursive: true });
   const client = createClient({ url, authToken: remote ? process.env.ALOJ_DB_TOKEN : undefined });
