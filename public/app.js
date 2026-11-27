@@ -634,7 +634,8 @@ function weeklyPanel(active) {
   if (!list.length) return null;
   const n = (k) => list.filter((i) => i.cs.key === k).length;
   const todo = list.filter((i) => i.cs.key !== 'ok').sort((a, b) => ['responder', 'pedir', 'enviado'].indexOf(a.cs.key) - ['responder', 'pedir', 'enviado'].indexOf(b.cs.key));
-  return h('details', { class: 'panel fold weekly', open: n('responder') > 0 },
+  // sempre fechado: o resumo (chips) chega; o pormenor abre ao clicar
+  return h('details', { class: 'panel fold weekly' },
     h('summary', h('span', 'Listas semanais (responsáveis) ',
       chip('s-ok', `${n('ok')} aplicadas`), ' ', n('responder') ? h('a', { href: '#/correcoes', onclick: (e) => e.stopPropagation() }, chip('warn', `${n('responder')} por aplicar →`)) : null, ' ', chip('', `${n('enviado')} à espera`), ' ', chip('', `${n('pedir')} por pedir`),
       list.some((i) => !i.r) ? [' ', chip('bad', `${list.filter((i) => !i.r).length} sem responsável`)] : null),
